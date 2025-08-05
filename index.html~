@@ -8,6 +8,10 @@ body, html {
 	margin: 0;
 }
 
+#popup-definer *::-webkit-scrollbar {
+	display: none;
+}
+
 .gsc-above-wrapper-area {
 	display:none;
 }
