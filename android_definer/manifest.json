@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Brave Android Definer",
+  "version": "0.0.23",
+  "description": "Define words easily on Android Brave.",
+  "action": {
+    "default_popup": "definer.html"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://cse.google.com/*",
+    "https://www.google.com/*",
+    "https://api.dictionaryapi.dev/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["definer.js"]
+    }
+  ],
+  "background": {
+  "scripts": ["background.js"],
+  "persistent": false
+  },
+"browser_specific_settings": {
+  "gecko": {
+    "id": "andreybosidov08@yandex.ru"
+  }
+}
+}

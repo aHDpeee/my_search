@@ -1,0 +1,241 @@
+
+const popup = document.createElement("div");
+popup.id = "popup-definer";
+popup.innerHTML = `
+	<div id="popup-header"></div>
+	<div id="popup-definition"></div>
+	<iframe id="popup-content"></iframe>
+`;
+document.body.appendChild(popup);
+
+function was_inside_container(container, e) {
+  const rect = container.getBoundingClientRect();
+
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+	
+
+  if (
+    mouseX >= rect.left &&
+    mouseX <= rect.right &&
+    mouseY >= rect.top &&
+    mouseY <= rect.bottom
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+
+document.addEventListener("click", (e)=>{
+	if (was_inside_container(popup, e) || window.getSelection().toString().trim().length > 0) return;
+                popup.classList.remove("show");
+	try {
+		const element = document.caretPositionFromPoint(e.clientX, e.clientY);
+		const offset = element.offset;
+		const txt = element.offsetNode.textContent;
+		const sel = window.getSelection();
+		const ran = document.createRange();
+
+		console.log(offset, element.offsetNode, txt.length <= 0, txt[offset]);
+		
+		if (txt.length <= 0) return;
+		const regex1 = /[^\s!\"#$%&'()*+,\./:;<=>?@[\\\]^_`{|}~]/
+		if (txt[offset].search(regex1) === -1) return;
+		start = 0; end = txt.length;
+		for (let i=offset; i<end; i++){
+			if (txt[i].search(regex1)===-1){
+				end=i;
+				break;
+			}
+		}
+		
+		for (let i=offset;i>start; i--){
+			if (txt[i].search(regex1)===-1){
+				start=i+1;
+				break;
+			}
+		}
+
+		console.log(start, offset, end);
+
+		ran.setStart(element.offsetNode, start);
+		ran.setEnd(element.offsetNode, end);
+
+		if (sel.direction !== "none") return;		
+
+		sel.removeAllRanges();
+		sel.addRange(ran);
+
+
+
+	} catch(err) {
+		console.log("just click", err);
+	}
+});
+
+
+function parseDictionaryData(data) {
+  // if (!Array.isArray(data) || data.length === 0) return "<p>No definitions found.</p>";
+
+  const entry = data[0];
+  let html = "";
+
+  entry.meanings.forEach(meaning => {
+    html += `<b>Part of speech: <em>${meaning.partOfSpeech}</em></b><ol>`;
+    meaning.definitions.forEach(def => {
+      html += `<li>`;
+      html += `<p>${def.definition}</p>`;
+      if (def.example) html += `<i>Example: "${def.example}"</i>`;
+      if (def.synonyms && def.synonyms.length > 0) {
+        html += `<p><strong>Synonyms:</strong> ${def.synonyms.join(", ")}</p>`;
+      }
+      if (def.antonyms && def.antonyms.length > 0) {
+        html += `<p><strong>Antonyms:</strong> ${def.antonyms.join(", ")}</p>`;
+      }
+      html += `</li>`;
+    });
+    html += `</ol>`;
+  });
+
+  return html;
+}
+
+const ext = browser || chrome;
+
+async function showPopupWithURL(query) {
+            try {
+                const popup = document.getElementById("popup-definer");
+		const content = document.getElementById("popup-content");
+		const definition = document.getElementById("popup-definition");
+		const head = document.getElementById("popup-header");
+
+
+		content.src = "https://ahdpeee.github.io/my_search/?q=" + query;
+                popup.classList.add("show");
+		head.textContent = query;
+
+		const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${query}`);
+		if (!res.ok) {
+			definition.classList.remove("popup-should-show");
+			return;
+		}
+		definition.classList.add("popup-should-show");
+		const meaning = (await res.json());
+		definition.innerHTML =  parseDictionaryData(meaning);
+		const entry = meaning[0];
+		head.innerHTML = `
+			<b>${entry.word} <small>${entry.phonetic || ""}</small></b>
+			<i>${meaning[0].meanings[0].partOfSpeech}</i><br/><span class="popup-define">${meaning[0].meanings[0].definitions[0].definition}</span>
+			    `
+
+
+            } catch (err) { console.error("Popup error:", err); }
+        }
+
+
+document.addEventListener("selectionchange", (e)=>{
+	const sel = window.getSelection();
+	const txt = sel.toString().trim()
+	if (txt.length <= 0) return;
+	// showPopupWithURL("https://lite.duckduckgo.com/lite/?q=define:"+txt);
+	showPopupWithURL(txt);
+});
+
+
+
+
+
+
+
+const style = document.createElement('style');
+style.textContent = `
+
+
+#popup-definer {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	width: 100%;
+	height: fit-content; max-height: 20em; min-height: 0;
+	background: rgba(255,255,255,0.5);
+	backdrop-filter: blur(5px);
+	box-shadow: 0 0 10px rgba(0,0,0,0.05);
+	border-radius: 10px;
+	overflow: hidden;
+	flex-direction: column;
+	z-index: 9999;
+	transition: 0.3s ease-in-out all;
+
+	pointer-events:none;
+	opacity:0;
+}
+
+#popup-definer * {
+	user-select:none;
+	scrollbar-width: none;
+}
+
+#popup-definer.expanded #popup-definition.popup-should-show, #popup-definer.expanded #popup-content {
+	display: block;
+	
+}
+
+#popup-definer.expanded {
+	bottom:0; left:0; 
+	width:100vw; max-height: 100vh; min-height: 100vh;
+	border-radius: 0;
+	overflow:scroll;
+}
+
+#popup-definer.show {
+
+	pointer-events:all;
+	opacity:1;
+}
+#popup-header {
+	padding: 10px;
+	cursor:pointer;
+	min-height: 5vh; height: fit-content;
+}
+#popup-content {
+	flex:1;
+	width:calc(100% - 2em);
+	min-height:calc(100vh - 2em);
+	border:none;
+	display:none;
+	opacity: 0.9;
+	margin: 1em;
+	border-radius: 1em;
+	
+}
+
+p, ol {
+	margin: 0.25em;
+}
+
+#popup-definition {
+	padding: 1em;
+	background: rgba(255,255,255, .9);
+	display: none;
+	margin: 1em;
+	border-radius: 1em;
+	backdrop-filter: blur(10px);
+}
+#popup-definition i {
+	opacity:0.7;
+}
+
+`;
+document.head.appendChild(style);
+
+
+
+document.querySelector("#popup-header").addEventListener("click", (e) => {
+	const popup = document.getElementById("popup-definer");
+	if (!popup.classList.contains("expanded")) popup.classList.add("expanded");
+	else popup.classList.remove("expanded");
+});
+
+

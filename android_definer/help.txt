@@ -1,0 +1,2 @@
+web-ext run --firefox="C:\Program Files\Firefox Developer Edition\firefox.exe"
+git add * && git commit -m "888" && git push && vim index.html

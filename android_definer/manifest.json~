@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "Brave Android Definer",
+  "version": "0.0.1",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["definer.js"]
+    }
+  ],
+  "action": {
+    "browser_style": true,
+    "default_icon": {
+      "48": "/icon.svg"
+    },
+    "default_title": "Brave Android Definer",
+    "default_popup": "definer.html"
+  },
+  "permissions": ["https://cse.google.com/*", "https://www.google.com/*"],
+  "web_accessible_resources": [
+      "assets/frame/index.html", "assets/frame/load-script.js"
+  ],
+  "host_permissions": [
+    "https://api.dictionaryapi.dev/*"
+  ]
+
+}

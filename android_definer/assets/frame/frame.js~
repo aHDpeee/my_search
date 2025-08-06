@@ -1,0 +1,7 @@
+
+      const params = new URLSearchParams(location.search);
+      const src = params.get("src");
+      console.log("Loading inner iframe src:", src);
+      if (src) {
+        document.getElementById("inner-frame").src = decodeURIComponent(src);
+      }
