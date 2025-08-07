@@ -115,7 +115,7 @@ async function showPopupWithURL(query) {
 		const head = document.getElementById("definerWindow-header");
 
 
-		content.src = "https://ahdpeee.github.io/my_search/?q=" + query;
+		content.src = "https://ahdpeee.github.io/Android-definer-extension/?q=" + query;
 		definerWindow.classList.add("show");
 		head.textContent = query;
 
